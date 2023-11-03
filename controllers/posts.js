@@ -25,7 +25,8 @@ module.exports = {
     try {
       const post = await Post.findById(req.params.id);
       const comments = await Comment.find({post:req.params.id}).sort({ createdAt: "desc" }).lean();
-      res.render("post.ejs", { post: post, user: req.user , comments:comments});
+      const users = await User.find().lean();
+      res.render("post.ejs", { post: post, user: req.user , comments:comments, users:users});
     } catch (err) {
       console.log(err);
     }
@@ -71,6 +72,7 @@ module.exports = {
       await cloudinary.uploader.destroy(post.cloudinaryId);
       // Delete post from db
       await Post.remove({ _id: req.params.id });
+      await Comment.remove({ post: req.params.id });
       console.log("Deleted Post");
       res.redirect("/profile");
     } catch (err) {
